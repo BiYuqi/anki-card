@@ -2,7 +2,7 @@
 
 一个 Claude Code Skill，将英语文本文件自动转换为可导入 Anki 的 CSV 卡片。
 
-根据你的词汇量等级（四级 / 六级 / 考研 / 雅思）智能筛选生词，为每个句子生成带 IPA 音标和中文释义的学习卡片。
+根据你的词汇量等级智能筛选生词，为每个句子生成带 IPA 音标和中文释义的学习卡片。
 
 ---
 
@@ -17,8 +17,8 @@ Think differently.
 
 生成 CSV（六级水平）：
 ```
-Innovation distinguishes between a leader and a follower.;innovation /ˌɪnəˈveɪʃn/ 创新<br>distinguishes /dɪˈstɪŋɡwɪʃɪz/ 区分<br>创新区分了领导者与追随者。
-We're here to put a dent in the universe.;dent /dent/ 凹痕；冲击<br>我们来到这里，是为了在宇宙中留下印记。
+Innovation distinguishes between a leader and a follower.;innovation /ˌɪnəˈveɪʃn/ 创新<br>distinguish /dɪˈstɪŋɡwɪʃ/ 区分<br>创新区分了领导者与追随者。
+We're here to put a dent in the universe.;dent /dent/ 凹痕，冲击<br>我们来到这里，是为了在宇宙中留下印记。
 Think differently.;以不同的方式思考。
 ```
 
@@ -43,12 +43,6 @@ cp -r anki-card-skill ~/.claude/skills/anki-card
 # 3. 验证安装（重启 Claude Code 后，输入 / 应能看到 anki-card）
 ```
 
-或手动创建：
-```bash
-mkdir -p ~/.claude/skills/anki-card
-cp SKILL.md ~/.claude/skills/anki-card/
-```
-
 ---
 
 ## 使用方法
@@ -61,28 +55,28 @@ cp SKILL.md ~/.claude/skills/anki-card/
 
 ### 流程
 
-1. 运行命令后，Claude 会提示选择词汇量等级：
+1. 运行命令后，Claude 会弹出词汇量选择面板（4 个常用等级）：
 
-```
-请选择你的英语水平：
-1. 四级以下
-2. 四级（CET-4，约 4000 词）
-3. 六级（CET-6，约 6000 词）
-4. 考研 / 专业（约 8000 词）
-5. 雅思（IELTS，约 8500+ 词）
-```
+   - 初中水平（约 1500 词）
+   - 高中水平（约 3000 词）
+   - 四级 CET-4（约 4000 词）
+   - 六级 CET-6（约 6000 词）
 
-2. 输入数字（1-5）后，自动生成 CSV 文件
+   **需要考研 / 雅思 / 自定义词汇量？** 选「其他」手动输入：
+   - `考研` 或 `研究生` → 按 8000 词处理
+   - `雅思` 或 `IELTS` → 按 8500 词处理
+   - 纯数字如 `2000`、`5000` → 按该词汇量处理
 
-3. 文件保存在**你运行命令时所在的目录**，文件名为时间戳（如 `20260407143052.csv`）
+2. 选择后自动处理文件，生成 CSV
+
+3. 文件保存在**你运行命令时所在目录的 `output/` 子目录**，文件名格式为 `{原文件名}_{时间戳}.csv`
 
 ### 示例
 
 ```bash
-# 在桌面运行
-cd ~/Desktop
-/anki-card ~/Downloads/speech.txt
-# → 生成 ~/Desktop/20260407143052.csv
+cd ~/project/english
+/anki-card speech.txt
+# → 生成 ~/project/english/output/speech_20260407171921.csv
 ```
 
 ---
@@ -93,7 +87,7 @@ cd ~/Desktop
 |------|------|
 | 分隔符 | `;`（分号）|
 | 编码 | UTF-8 |
-| Front | 英文原句 |
+| Front | 英文原句（原句中的分号会被替换为逗号或破折号） |
 | Back | 词汇注解（音标 + 中文）+ 整句翻译 |
 
 Back 结构：
@@ -106,6 +100,8 @@ Back 结构：
 英文句子;整句中文翻译
 ```
 
+**跨卡片词汇去重**：同一个词（按原形）只在第一次出现时注解，后续卡片不重复标注。
+
 ---
 
 ## 导入 Anki
@@ -115,6 +111,7 @@ Back 结构：
 3. 设置：
    - **字段分隔符**：`;`（分号）
    - **字段映射**：字段 1 → 正面，字段 2 → 背面
+   - **允许 HTML**：开启（Back 中含 `<br>` 换行标签）
 4. 点击导入
 
 ---
@@ -131,13 +128,15 @@ Back 结构：
 
 | 等级 | 词汇量 | 适合人群 |
 |------|--------|---------|
-| 四级以下 | ~2000 词 | 初学者，高中英语水平 |
+| 初中水平 | ~1500 词 | 初中英语水平 |
+| 高中水平 | ~3000 词 | 高中英语水平 |
 | 四级（CET-4）| ~4000 词 | 大学英语四级 |
 | 六级（CET-6）| ~6000 词 | 大学英语六级 |
 | 考研 / 专业 | ~8000 词 | 研究生入学考试水平 |
 | 雅思（IELTS）| ~8500+ 词 | 雅思 / 学术英语水平 |
+| 自定义数字 | 任意 | 直接输入词汇量数字，如 2000 |
 
-等级越低，被标注的词越多（对你来说生词更多）。
+等级越低，被标注的词越多（对你来说生词越多）。
 
 ---
 
